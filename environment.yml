@@ -1,0 +1,10 @@
+name: asl_flashcards
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - streamlit
+  - python=3.9
+  - ffmpeg
+  - pytest
+  - pandas
