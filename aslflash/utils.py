@@ -10,6 +10,14 @@ import streamlit as st
 logger = logging.getLogger(__name__)
 
 
+def get_vocab_timing_df(csv_source) -> pd.DataFrame:
+    dtype_dict = {
+        "word": "string",
+        "start_time": "float64",
+    }
+    return pd.read_csv(csv_source, dtype=dtype_dict)
+
+
 def make_segment_string(vocab_timing_df: pd.DataFrame) -> str:
     """
     Make the string that passed to ffmpeg that has the times dividing segments.
@@ -23,6 +31,27 @@ def make_segment_string(vocab_timing_df: pd.DataFrame) -> str:
             Example: "1.532,2.730,3.435"
     """
     return ",".join([str(time) for time in vocab_timing_df["start_time"]])
+
+
+@st.cache
+def rename_videos(split_video_dir: str, word_timing_df: pd.DataFrame) -> None:
+    # Get absolute file paths of the videos in the dir
+    # Parse filename to get the index -- just split on the '.' for the extension
+    # Use the index to access the correct row in the DF
+    # Rename the file to be `word.ext`
+    filenames = os.listdir(split_video_dir)
+
+    for filename in filenames:
+        segment_number, extension = filename.split(".")
+        segment_number = int(segment_number)
+        logger.info("Renaming video %s", segment_number)
+
+        index = segment_number - 1
+        word = word_timing_df["word"].iloc[index]
+        os.rename(
+            os.path.join(split_video_dir, filename),
+            os.path.join(split_video_dir, f"{word}.{extension}"),
+        )
 
 
 @st.cache
@@ -59,7 +88,7 @@ def split_video(video_data: bytes, segment_string: str) -> str:
         logger.info("Output will be at: %s", split_video_dir)
 
         # Configure the command
-        output_file_format = f"{split_video_dir}/word%d.mov"
+        output_file_format = f"{split_video_dir}/%d.mov"
         command = ffmpeg_command.format(
             video_path=f.name,
             segment_string=segment_string,
@@ -69,18 +98,30 @@ def split_video(video_data: bytes, segment_string: str) -> str:
         command_out = subprocess.run(command, capture_output=True, shell=True)
         logger.debug("Command out:\n%s", command_out)
 
+        # Remove the initial segment before the first word
+        os.remove(os.path.join(split_video_dir, "0.mov"))
+
     return split_video_dir
 
 
-def validate_timing_csv(csv_df: pd.DataFrame) -> bool:
-    return all(
-        [
-            "word" in csv_df.columns,  # type: ignore
-            "start_time" in csv_df.columns,  # type: ignore
-            csv_df.dtypes["word"] == "string",
-            csv_df.dtypes["start_time"] == "float64",
-        ]
-    )
+def validate_word_timing_df(csv_df: pd.DataFrame) -> bool:
+    required_columns = ["word", "start_time"]
+    if not all([column in csv_df.columns for column in required_columns]):
+        raise ValueError(
+            f"Expected {required_columns} in columns, got {csv_df.columns}"
+        )
+
+    column_to_dtype = {
+        "word": "string",
+        "start_time": "float64",
+    }
+    for column, dtype in column_to_dtype.items():
+        if not csv_df.dtypes[column] == dtype:
+            raise ValueError(
+                f"Expected column {column} to be dtype {dtype}, got {csv_df.dtypes[column]}"
+            )
+
+    return True
 
 
 def zip_dir(source_dir: str) -> str:
