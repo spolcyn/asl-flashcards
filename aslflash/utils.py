@@ -121,6 +121,9 @@ def validate_word_timing_df(csv_df: pd.DataFrame) -> bool:
                 f"Expected column {column} to be dtype {dtype}, got {csv_df.dtypes[column]}"
             )
 
+    if len(set(csv_df["word"])) != len(csv_df["word"]):
+        raise ValueError("Got the same word multiple times, all words must be unique")
+
     return True
 
 
