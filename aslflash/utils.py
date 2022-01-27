@@ -8,6 +8,7 @@ import pandas as pd
 import streamlit as st
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 
 def get_vocab_timing_df(csv_source) -> pd.DataFrame:
@@ -39,12 +40,18 @@ def rename_videos(split_video_dir: str, word_timing_df: pd.DataFrame) -> None:
     # Parse filename to get the index -- just split on the '.' for the extension
     # Use the index to access the correct row in the DF
     # Rename the file to be `word.ext`
+    logger.info(f"Renaming videos in directory {split_video_dir}")
     filenames = os.listdir(split_video_dir)
+    logger.info(f"Filenames {filenames}")
 
     for filename in filenames:
         segment_number, extension = filename.split(".")
         segment_number = int(segment_number)
         logger.info("Renaming video %s", segment_number)
+
+        if segment_number == 0:
+            os.remove(os.path.join(split_video_dir, filename))
+            continue
 
         index = segment_number - 1
         word = word_timing_df["word"].iloc[index]
@@ -67,9 +74,20 @@ def split_video(video_data: bytes, segment_string: str) -> str:
     Returns:
         str: Path to directory where split videos are
     """
-    ffmpeg_command = (
-        "ffmpeg -i {video_path} -f segment -segment_times {segment_string} "
-        '-c:v copy -map 0 -c:a copy -reset_timestamps 1 "{output_file_format}"'
+    ffmpeg_command = " ".join(
+        [
+            "ffmpeg",
+            "-i {video_path}",
+            "-f segment",
+            "-segment_times {segment_string}",
+            "-force_key_frames {segment_string}",
+            "-c:v libx264",
+            "-map 0",
+            "-c:a copy",
+            "-reset_timestamps 1",
+            "-segment_time_delta 0.021",  # 1 / (2 * 24)
+            "{output_file_format}",
+        ]
     )
 
     with NamedTemporaryFile(suffix=".mov", mode="wb") as f:
@@ -88,7 +106,7 @@ def split_video(video_data: bytes, segment_string: str) -> str:
         logger.info("Output will be at: %s", split_video_dir)
 
         # Configure the command
-        output_file_format = f"{split_video_dir}/%d.mov"
+        output_file_format = f"{split_video_dir}/%d.mp4"
         command = ffmpeg_command.format(
             video_path=f.name,
             segment_string=segment_string,
@@ -96,10 +114,11 @@ def split_video(video_data: bytes, segment_string: str) -> str:
         )
         logger.info("ffmpeg command to run:\n%s", command)
         command_out = subprocess.run(command, capture_output=True, shell=True)
-        logger.debug("Command out:\n%s", command_out)
+        logger.info("Command out:\n%s", command_out)
 
         # Remove the initial segment before the first word
-        os.remove(os.path.join(split_video_dir, "0.mov"))
+        # os.remove(os.path.join(split_video_dir, "0.mov"))
+        logger.info("Not removing")
 
     return split_video_dir
 
@@ -138,7 +157,7 @@ def zip_dir(source_dir: str) -> str:
         str: Path to the created zip file
     """
     zip_output_dir = mkdtemp()
-    logger.debug("Creating zip outout...")
+    logger.debug(f"Zipping directory {source_dir}")
 
     zip_output_path = shutil.make_archive(
         os.path.join(zip_output_dir, "split_videos"), "zip", source_dir
