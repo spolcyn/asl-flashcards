@@ -18,6 +18,7 @@ from aslflash.utils import (
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
+
 def render():
     if "logged_in" not in st.session_state:
         with open("logins.yml") as f:
@@ -70,11 +71,12 @@ def render():
     # Reset timestamps to avoid all videos black but the
     # first: https://trac.ffmpeg.org/ticket/142://trac.ffmpeg.org/ticket/1425
 
-
     st.title("ASL Flashcards")
 
     st.subheader("Vocab and Timing List Upload")
-    vocab_timing_csv = st.file_uploader("CSV file with Vocab and Timing info", type=["csv"])
+    vocab_timing_csv = st.file_uploader(
+        "CSV file with Vocab and Timing info", type=["csv"]
+    )
     segment_string = None
     vocab_timing_df = None
     if vocab_timing_csv:
@@ -86,7 +88,6 @@ def render():
 
         segment_string = make_segment_string(vocab_timing_df)
         logger.debug("Segment string: %s", segment_string)
-
 
     finished_computation = False
     split_video_dir = None
@@ -110,7 +111,6 @@ def render():
             "Video upload not available until vocab/timing CSV has been uploaded and validated"
         )
 
-
     st.subheader("Split Video Download")
     zip_videos_dependencies = [finished_computation, split_video_dir]
     if all(zip_videos_dependencies):
@@ -119,8 +119,9 @@ def render():
         zip_output_path = zip_dir(split_video_dir)  # type: ignore
 
         # Create a CSV file to import to Anki
+        VIDEO_OUTPUT_EXTENSION = "mp4"
         words = vocab_timing_df["word"]
-        video_paths = [f"[sound:{word}.mov]" for word in words]
+        video_paths = [f"[sound:{word}.{VIDEO_OUTPUT_EXTENSION}]" for word in words]
         df_dict = {"word": words, "video_path": video_paths}
         anki_import_df = pd.DataFrame.from_dict(df_dict)
         anki_import_csv = bytes(
@@ -153,4 +154,6 @@ def render():
             # download the file
             url = "test.com"
             href = f'<a href="{url}" download="split_videos.zip">Click to download split videos</a>'
-            st.markdown(f"Download a zip of your files at {href}", unsafe_allow_html=True)
+            st.markdown(
+                f"Download a zip of your files at {href}", unsafe_allow_html=True
+            )

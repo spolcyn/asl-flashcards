@@ -9,5 +9,5 @@ setup(
     description="ASL Flashcard Builder",
     author="Stephen Polcyn",
     url="spyn.us",
-    packages=find_packages()
+    packages=find_packages(),
 )
