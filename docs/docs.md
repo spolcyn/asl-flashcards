@@ -54,17 +54,34 @@ haven't already.
 
 ### Step 2: Using the ASL Flashcards App
 
+Once you've finished your CSV vocabulary list file, you're ready to use the app.
+This should be the easiest part!
+
+1. Under `Vocab and Timing List Upload`, upload your CSV vocabulary list file.
+   Your file will be validated, and a preview of your file will appear.
+2. Under `Video Upload`, upload the vocabulary video corresponding to your
+   vocabulary list.
+
+The video will then be split into one video for each word. This could take some
+time, especially if your video is long. After the split is complete, you can
+download all your word videos at once.
+
+You can also download a CSV file that has all the necessary data in the proper
+format to import cards in bulk to Anki. See [Importing Flashcards to
+Anki](#anki-import) for more details.
+
+<a name="anki-import"></a>
 ### Step 3: Importing Flashcards to Anki
 
 #### Step 3.1: Importing Media
 #### Step 3.2: Importing Cards
 
 
-## Format Specifications
 <a name="format-spec"></a>
+## Format Specifications
 
-### CSV Vocabulary List File Specification
 <a name="csv-format-spec"></a>
+### CSV Vocabulary List File Specification
 CSV is an output format of many spreadsheet programs that's useful for storing
 data that is naturally arranged in columns.
 
@@ -106,6 +123,6 @@ Which, as a table, looks like:
 
 ## Appendix
 
-### Appendix A: Setting Up VLC for CSV Vocabulary List File Creation
 <a name="appendix-a"></a>
+### Appendix A: Setting Up VLC for CSV Vocabulary List File Creation
 
