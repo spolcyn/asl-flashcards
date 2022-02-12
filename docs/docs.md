@@ -27,7 +27,30 @@ The recommended way to do this is using VLC. Before proceeding, follow the
 instructions in the [appendix](#appendix-a) to set up VLC for this step, if you
 haven't already.
 
-1. Open your video in VLC.
+1. Create the vocabulary list in a spreadsheet
+
+    1. Using a program like Microsoft Excel, Google Sheets, Numbers, etc., make
+       a spreadsheet with columns according to the [Format
+       Specification](#format-spec).
+    2. In the `word` column, enter each of your vocabulary words (one per row)
+       in the order they appear in the vocabulary video.
+    3. At the end, your spreadsheet should look like [the
+       example](#rendered-vocabulary-csv), but with all columns other than
+       `word` empty.
+
+2. Open your video in VLC.
+
+    1. Play the video until the first word starts. As soon as the motion begins,
+       pause the video, and in the row in your spreadsheet corresponding to the
+       word that is about to be signed, write down the timestamp (in seconds)
+       shown by the VLC plugin on the video. For example, you might write down
+       `1.902` in your spreadsheet next to the first word.
+    2. Continue playing/pausing the video until you have a starting timestamp
+       for all signs in the video. Be careful not to put the starting timestamp
+       too late, or your flashcard's sign video will be cut off!
+    3. When complete, export your spreadsheet as a CSV file. Google `export as
+       CSV <your spreadsheet program>` to find resources on how to do so if you
+       don't know how, e.g., `export as CSV excel`.
 
 ### Step 2: Using the ASL Flashcards App
 
@@ -41,6 +64,10 @@ haven't already.
 <a name="format-spec"></a>
 
 ### CSV Vocabulary List File Specification
+<a name="csv-format-spec"></a>
+CSV is an output format of many spreadsheet programs that's useful for storing
+data that is naturally arranged in columns.
+
 1. The [CSV](https://en.wikipedia.org/wiki/Comma-separated_values) file MUST
    be as follows:
     1. The first column MUST be titled `word`
@@ -49,6 +76,7 @@ haven't already.
     2. The second column MUST be titled `start_time`
         1. The values in the `start_time` column must be float (decimal) numbers
            of the form `A.XYZ`. For example, `1.234`
+
 
 #### Example of a Valid CSV Vocabulary List:
 ```
@@ -62,6 +90,7 @@ GOOD+NIGHT, 12.655
 ```
 
 Which, as a table, looks like:
+<a name="rendered-vocabulary-csv"></a>
 
 |word                     |start_time|
 |-------------------------|----------|
