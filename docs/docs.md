@@ -74,7 +74,32 @@ Anki](#anki-import) for more details.
 ### Step 3: Importing Flashcards to Anki
 
 #### Step 3.1: Importing Media
+
+After unzipping your video file, you should have a folder with a each of your
+word videos in it. We'll copy all of those videos to the Anki media folder,
+which is named `collections.media` where it stores things like videos, images,
+and sounds that you can use in your flashcards.
+
+1. Go to <a href="https://docs.ankiweb.net/files.html#file-locations">https://docs.ankiweb.net/files.html#file-locations</a> and find the folder that corresponds to your OS.
+2. Navigate to that folder.
+3. In that folder, open the `collections.media` folder.
+4. Copy all the word video files you downloaded into this folder. IMPORTANT: Do
+   not rename these videos, or the Anki importable CSV created by the app will
+   not work!
+
+Your media is now accessible by Anki.
+
 #### Step 3.2: Importing Cards
+
+1. Open Anki.
+2. Open the deck you want to import the cards to.
+3. Use the Anki menus to select "Import" (on a Mac, as of this writing, that's
+   `File -> Import`.
+4. Select the CSV you downloaded from the app after splitting your videos.
+5. Select the card type to import to (`Basic (and reversed card)` is
+   recommended).
+6. Click `Import`.
+7. You're done. Go study!
 
 
 <a name="format-spec"></a>
