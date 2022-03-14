@@ -58,6 +58,7 @@ def render():
     st.title("ASL Flashcards")
 
     st.subheader("Vocab and Timing List Upload")
+
     vocab_timing_csv = st.file_uploader(
         "CSV file with Vocab and Timing info", type=["csv"]
     )
@@ -65,18 +66,23 @@ def render():
     vocab_timing_df = None
     if vocab_timing_csv:
         vocab_timing_data = BytesIO(vocab_timing_csv.getvalue())
-        vocab_timing_df = get_vocab_timing_df(vocab_timing_data)
-        assert validate_word_timing_df(vocab_timing_df)
+        try:
+            vocab_timing_df = get_vocab_timing_df(vocab_timing_data)
+            validate_word_timing_df(vocab_timing_df)
+        except ValueError as e:
+            logger.exception(e)
+            st.error(str(e))
+            return
 
         st.dataframe(vocab_timing_df)
 
         segment_string = make_segment_string(vocab_timing_df)
         logger.debug("Segment string: %s", segment_string)
 
+    st.subheader("Video Upload")
+
     finished_computation = False
     split_video_dir = None
-
-    st.subheader("Video Upload")
     video_split_dependencies = [vocab_timing_df is not None, segment_string]
     if all(video_split_dependencies):
         video_file = st.file_uploader("Video with words signed")
@@ -96,6 +102,7 @@ def render():
         )
 
     st.subheader("Split Video Download")
+
     zip_videos_dependencies = [finished_computation, split_video_dir]
     if all(zip_videos_dependencies):
         # BOTH METHODS:

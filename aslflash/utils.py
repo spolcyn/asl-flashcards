@@ -16,7 +16,14 @@ def get_vocab_timing_df(csv_source) -> pd.DataFrame:
         "word": "string",
         "start_time": "float64",
     }
-    return pd.read_csv(csv_source, dtype=dtype_dict)
+
+    try:
+        return pd.read_csv(csv_source, dtype=dtype_dict)
+    except ValueError as exc:
+        raise ValueError(
+            "Column values were the wrong types. "
+            "Review the docs to ensure your CSV coforms to the format specification."
+        )
 
 
 def make_segment_string(vocab_timing_df: pd.DataFrame) -> str:
@@ -127,7 +134,7 @@ def validate_word_timing_df(csv_df: pd.DataFrame) -> bool:
     required_columns = ["word", "start_time"]
     if not all([column in csv_df.columns for column in required_columns]):
         raise ValueError(
-            f"Expected {required_columns} in columns, got {csv_df.columns}"
+            f"Expected {required_columns} as columns (got {list(csv_df.columns)})"
         )
 
     column_to_dtype = {
@@ -137,11 +144,24 @@ def validate_word_timing_df(csv_df: pd.DataFrame) -> bool:
     for column, dtype in column_to_dtype.items():
         if not csv_df.dtypes[column] == dtype:
             raise ValueError(
-                f"Expected column {column} to be dtype {dtype}, got {csv_df.dtypes[column]}"
+                f"Expected column {column} to be dtype {dtype} (got {csv_df.dtypes[column]})"
             )
 
-    if len(set(csv_df["word"])) != len(csv_df["word"]):
-        raise ValueError("Got the same word multiple times, all words must be unique")
+    deduplicated_words = set(csv_df["word"])
+    if len(deduplicated_words) != len(csv_df["word"]):
+        duplicated_words = []
+        temp_set = set()
+        for word in csv_df["word"]:
+            len_before = len(temp_set)
+            temp_set.add(word)
+            if len(temp_set) == len_before:
+                duplicated_words.append(word)
+
+        duplicated_words_str = ", ".join(duplicated_words)
+
+        raise ValueError(
+            f"Got {duplicated_words_str} multiple times, all words must be unique"
+        )
 
     return True
 
