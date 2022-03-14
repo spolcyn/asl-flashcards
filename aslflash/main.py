@@ -41,8 +41,9 @@ def render():
             logger.debug("Username not found")
             return
 
-        st.success("Login succeeded")
+        st.success(f"Login succeeded. Welcome, {username}.")
         st.session_state["logged_in"] = True
+        st.session_state["username"] = username
 
         # https://discuss.streamlit.io/t/delete-widgets/7596/6
         username_in.empty()
