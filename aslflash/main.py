@@ -1,5 +1,6 @@
 from io import BytesIO
 import logging
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -63,6 +64,27 @@ def render():
 
     st.subheader("Vocab and Timing List Upload")
 
+    choice = st.selectbox(
+        "What do you want to do?", ["Make flashcards", "View documentation"]
+    )
+
+    if choice == "Make flashcards":
+        render_app()
+    elif choice == "View documentation":
+        render_docs()
+    else:
+        assert False
+
+
+def render_docs():
+    doc_path = Path.cwd().parent / "docs" / "docs.md"
+    with open(doc_path, mode="r") as doc_file:
+        doc_body = doc_file.read()
+
+    st.markdown(doc_body, unsafe_allow_html=True)
+
+
+def render_app():
     vocab_timing_csv = st.file_uploader(
         "CSV file with Vocab and Timing info", type=["csv"]
     )
