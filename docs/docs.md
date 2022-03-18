@@ -96,6 +96,8 @@ Your media is now accessible by Anki.
 3. Use the Anki menus to select "Import" (on a Mac, as of this writing, that's
    `File -> Import`.
 4. Select the CSV you downloaded from the app after splitting your videos.
+    1. Note that the first column of the CSV is the word, and the second column
+       is the path to the video file for that word.
 5. Select the card type to import to (`Basic (and reversed card)` is
    recommended).
 6. Click `Import`.

@@ -142,7 +142,8 @@ def render_app():
         df_dict = {"word": words, "video_path": video_paths}
         anki_import_df = pd.DataFrame.from_dict(df_dict)
         anki_import_csv = bytes(
-            anki_import_df.to_csv(line_terminator="\n", index=False), encoding="utf-8"
+            anki_import_df.to_csv(line_terminator="\n", header=False, index=False),
+            encoding="utf-8",
         )
 
         # LOCAL METHOD:
