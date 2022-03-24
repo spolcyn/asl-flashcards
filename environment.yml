@@ -12,3 +12,6 @@ dependencies:
   - pyyaml
   - setuptools
   - streamlit
+  - pip
+  - pip:
+    - genanki

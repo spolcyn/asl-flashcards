@@ -1,14 +1,45 @@
 import shutil
 import os
 import logging
+from pathlib import Path
 import subprocess
 from tempfile import NamedTemporaryFile, mkdtemp
 
 import pandas as pd
 import streamlit as st
+import genanki
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+
+# TODO(spolcyn): Make a more robust way to generate the model_id, given that it
+# may overlap with existing user decks
+asl_model = genanki.Model(
+    model_id=1486321964,
+    name="Anki ASL",
+    fields=[
+        {"name": "Word"},
+        {"name": "Video"},
+        {"name": "Notes"},
+    ],
+    templates=[
+        {
+            "name": "Word to ASL",
+            "qfmt": "Word: {{Word}}",
+            "afmt": "{{FrontSide}}<hr id=answer>{{Video}}<br><br>Notes: {{Notes}}",
+        },
+        {
+            "name": "ASL to Word",
+            "qfmt": "ASL: {{Video}}",
+            "afmt": "{{FrontSide}}<hr id=answer>{{Word}}<br><br>Notes: {{Notes}}",
+        },
+    ],
+)
+
+# TODO(spolcyn): Make a more robust way to generate the deck_id, given that it
+# may overlap with existing user decks
+def get_asl_anki_deck() -> genanki.Deck:
+    return genanki.Deck(deck_id=1374105886, name="ASL Anki")
 
 
 def get_vocab_timing_df(csv_source) -> pd.DataFrame:
@@ -185,3 +216,22 @@ def zip_dir(source_dir: str) -> str:
     logger.info("Created ZIP output at: %s", zip_output_path)
 
     return zip_output_path
+
+
+def build_apkg_from_df(anki_import_df: pd.DataFrame, split_video_dir: str):
+    notes = [
+        genanki.Note(model=asl_model, fields=[video, word, ""])
+        for (video, word) in zip(anki_import_df["word"], anki_import_df["video_path"])
+    ]
+
+    deck = get_asl_anki_deck()
+    for note in notes:
+        deck.add_note(note)
+
+    video_files = [f for f in Path(split_video_dir).iterdir() if f.is_file()]
+    logger.debug(f"Adding video files to apkg: {video_files}")
+
+    package = genanki.Package(deck)
+    package.media_files = video_files
+
+    return package

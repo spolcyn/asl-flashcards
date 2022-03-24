@@ -1,6 +1,7 @@
 from io import BytesIO
 import logging
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 import pandas as pd
 import streamlit as st
@@ -8,6 +9,7 @@ from pathvalidate import sanitize_filename
 import yaml
 
 from aslflash.utils import (
+    build_apkg_from_df,
     get_vocab_timing_df,
     validate_word_timing_df,
     split_video,
@@ -62,7 +64,7 @@ def render():
 
     st.title("ASL Flashcards")
 
-    st.subheader("Vocab and Timing List Upload")
+    st.header("Vocab and Timing List Upload")
 
     choice = st.selectbox(
         "What do you want to do?", ["Make flashcards", "View documentation"]
@@ -105,7 +107,7 @@ def render_app():
         segment_string = make_segment_string(vocab_timing_df)
         logger.debug("Segment string: %s", segment_string)
 
-    st.subheader("Video Upload")
+    st.header("Video Upload")
 
     finished_computation = False
     split_video_dir = None
@@ -127,7 +129,7 @@ def render_app():
             "Video upload not available until vocab/timing CSV has been uploaded and validated"
         )
 
-    st.subheader("Split Video Download")
+    st.header("Split Video Download")
 
     zip_videos_dependencies = [finished_computation, split_video_dir]
     if all(zip_videos_dependencies):
@@ -146,10 +148,25 @@ def render_app():
             encoding="utf-8",
         )
 
+        # Create APKG to import to Anki
+        deck_apkg = build_apkg_from_df(anki_import_df, split_video_dir)
+        with NamedTemporaryFile(delete=False, suffix=".apkg") as deck_file:
+            deck_apkg.write_to_file(deck_file)
+
         # LOCAL METHOD:
         # Read file into memory and make a download link for it
         LOCAL_MODE = True
         if LOCAL_MODE:
+            st.subheader("Recommended Download Mode")
+            with open(deck_file.name, "rb") as deck_apkg:
+                st.download_button(
+                    label="Download Anki Package to import to Anki",
+                    data=deck_apkg,
+                    file_name="asl_anki.apkg",
+                    mime="application/octet-stream",
+                )
+
+            st.subheader("Expert/Manual Download Mode")
             with open(zip_output_path, "rb") as f:
                 st.download_button(
                     label="Download ZIP of split videos",
@@ -164,6 +181,7 @@ def render_app():
                     file_name="anki_import.csv",
                     mime="application/text",
                 )
+
         else:
             # CLOUD METHOD:
             # Upload the zip file to S3 on a time-limited basis (say, 5-10min)
