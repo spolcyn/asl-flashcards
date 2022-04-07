@@ -12,6 +12,16 @@ import genanki
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
+card_style = """
+.card {
+  font-family: arial;
+  font-size: 20px;
+  text-align: center;
+  color: black;
+  background-color: white;
+}
+"""
+
 # TODO(spolcyn): Make a more robust way to generate the model_id, given that it
 # may overlap with existing user decks
 asl_model = genanki.Model(
@@ -34,6 +44,7 @@ asl_model = genanki.Model(
             "afmt": "{{FrontSide}}<hr id=answer>{{Word}}<br><br>Notes: {{Notes}}",
         },
     ],
+    css=card_style,
 )
 
 # TODO(spolcyn): Make a more robust way to generate the deck_id, given that it
