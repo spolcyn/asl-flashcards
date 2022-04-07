@@ -52,6 +52,7 @@ haven't already.
        CSV <your spreadsheet program>` to find resources on how to do so if you
        don't know how, e.g., `export as CSV excel`.
 
+<a name="using-app"></a>
 ### Step 2: Using the ASL Flashcards App
 
 Once you've finished your CSV vocabulary list file, you're ready to use the app.
@@ -66,21 +67,45 @@ The video will then be split into one video for each word. This could take some
 time, especially if your video is long. After the split is complete, you can
 download all your word videos at once.
 
-You can also download a CSV file that has all the necessary data in the proper
-format to import cards in bulk to Anki. See [Importing Flashcards to
-Anki](#anki-import) for more details.
+You can also download an Anki `apkg` (Anki Package) file that has all the
+necessary data in the proper format to import cards in bulk to Anki. See
+[Importing Flashcards to Anki](#anki-import) for more details.
 
 <a name="anki-import"></a>
 ### Step 3: Importing Flashcards to Anki
 
-#### Step 3.1: Importing Media
+After making your flashcards, download the Anki Package file from the app. Now,
+double click the file. It should automatically open in Anki. If a double click
+doesn't work, use the `Import` button (on macOS, it's under `File -> Import`)
+and select the `.apkg` file you've just downloaded.
+
+You should now see a deck called "ASL Anki" in your Anki deck list. Whenever you
+use the app in the future, you can continue to download the `.apkg` file from
+the app, and when you import it, all of your new flashcards will go straight
+into that deck.
+
+Congratulations! You're all done. Time to go study.
+
+#### Expert/Manual Import Mode
+
+The following steps are for manual CSV and media imports. While this can give
+you additional flexibility in your import, for most users, it's highly
+recommended to use the `apkg` import method described above instead!
+
+#### Step 3.0 (Expert/Manual): Download Files
+
+After creating your flashcards with the [previous step](#using-app), download
+the ZIP file containing all the split videos and the CSV to import to Anki. The
+following steps will tell you how to use them.
+
+#### Step 3.1 (Expert/Manual): Importing Media
 
 After unzipping your video file, you should have a folder with a each of your
 word videos in it. We'll copy all of those videos to the Anki media folder,
 which is named `collections.media` where it stores things like videos, images,
 and sounds that you can use in your flashcards.
 
-1. Go to <a href="https://docs.ankiweb.net/files.html#file-locations">https://docs.ankiweb.net/files.html#file-locations</a> and find the folder that corresponds to your OS.
+1. Go to <a href="https://docs.ankiweb.net/files.html#file-locations">https://docs.ankiweb.net/files.html#file-locations</a> and find the folder that corresponds to your operating system (e.g,. macOS, Windows, or Linux).
 2. Navigate to that folder.
 3. In that folder, open the `collections.media` folder.
 4. Copy all the word video files you downloaded into this folder. IMPORTANT: Do
@@ -89,7 +114,7 @@ and sounds that you can use in your flashcards.
 
 Your media is now accessible by Anki.
 
-#### Step 3.2: Importing Cards
+#### Step 3.2 (Expert/Manual): Importing Cards
 
 1. Open Anki.
 2. Open the deck you want to import the cards to.
