@@ -79,7 +79,7 @@ def render():
 
 
 def render_docs():
-    doc_path = Path.cwd().parent / "docs" / "docs.md"
+    doc_path = Path(__file__).parent.parent / "docs" / "docs.md"
     with open(doc_path, mode="r") as doc_file:
         doc_body = doc_file.read()
 
