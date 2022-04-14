@@ -178,3 +178,61 @@ Which, as a table, looks like:
 <a name="appendix-a"></a>
 ### Appendix A: Setting Up VLC for CSV Vocabulary List File Creation
 
+To build the CSV Vocabulary list file, you must be able to precisely mark the
+beginning of each word with its timestamp. While you can use any video playing
+software that gives you this ability, the suggested method is using VLC, an
+open-source video playing software, paired with an extension to give precise
+timestamps. The following instructions will guide you through downloading that
+software, installing the extension, and configuring that extension to help you
+mark accurate timestamps.
+
+1. Download VLC from: https://www.videolan.org/vlc/
+1. Install VLC using the usual installation method for your system.
+1. Download the `Time v3.2` VLC extension from: https://addons.videolan.org/p/1154032
+    1. You can download the extension as a `.zip` from the `Files` tab.
+1. Unzip the downloaded file.
+1. Install the extension according to the instructions listed on the download
+   page. They're somewhat hard to understand, but all the information is there.
+   Alternatively (or in conjunction with the extension-provided install
+   instructions), follow the macOS-specific procedure below and adapt it to your
+   OS.
+    1. Navigate to `/Applications/VLC.app/Contents/MacOS/share/lua` (note this
+       path is also listed at the bottom of the download page, along with the
+       paths for Windows and Linux).
+        1. You can use Finder to get to this folder. Open Finder, then click on
+           `Go -> Go to Folder` and enter the path above.
+    1. You'll notice an `extensions` directory and an `intf` directory in this
+       folder. You'll also notice that in the folder you unzipped, there's an
+       `extensions` folder and an `intf` folder. Copy each file from its
+       folder in the downloaded folder into its corresponding folder.
+        1. The two files to copy should be named `time_ext.lua` and
+           `time_intf.lua`
+1. The extension is now installed.
+1. Open VLC.
+1. Open the Time extension configuration screen from the `VLC -> Extensions ->
+   Time v3.2 (intf)` menu.
+1. In the text input area in the configuration pop-up, enter the following
+   pattern: `[E] / [D]`. This will lead to output overlayed on the video during
+   playback like `01,155 / 01:01`.
+    1. `[E]` is a special sequence that gets replaced with the current
+       **E**lapsed time during video playback (i.e., the current point being
+       viewed in the video).
+    1. `[D]` is a special sequence that gets replaced with the **D**uration of the
+       video.
+    1. The `/` in between is just a literal character that will separate the two
+       numbers during video playback to help you distinguish the two numbers.
+    1. There are a variety of other special sequences you can use and patterns
+       you can set. Feel free to explore, but we won't cover that here or
+       support the usage of other patterns.
+1. By default, the time markers appear in the `top-right` of the screen. You can
+   configure that using the drop down menu, which is in the top right of the
+   configuration pop-up.
+1. Click `START!` (below the text input box)
+1. If you open a video, you should now see a number that looks like `01,155 /
+   01:01` overlayed on your screen.
+1. As you play the video, you can pause it right before a word starts and note
+   down the time to create the CSV Vocabulary List File.
+    1. When creating the CSV Vocabulary List File, enter the start time using a
+       `.` instead of a `,` (e.g., `1.155` instead of `1,155`) to separate the numbers. The number represents the
+       elapsed time as `Seconds.Milliseconds`.
+1. Congratulations! You're all ready to start creating CSV Vocabulary Lists.
