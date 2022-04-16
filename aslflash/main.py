@@ -6,6 +6,7 @@ from tempfile import NamedTemporaryFile
 import pandas as pd
 import streamlit as st
 from pathvalidate import sanitize_filename
+from streamlit_tags import st_tags
 import yaml
 
 from aslflash.utils import (
@@ -131,6 +132,8 @@ def render_app():
 
     st.header("Split Video Download")
 
+    words = None
+    video_paths = None
     zip_videos_dependencies = [finished_computation, split_video_dir]
     if all(zip_videos_dependencies):
         # BOTH METHODS:
@@ -141,7 +144,22 @@ def render_app():
         VIDEO_OUTPUT_EXTENSION = "mp4"
         words = vocab_timing_df["word"]
         video_paths = [f"[sound:{word}.{VIDEO_OUTPUT_EXTENSION}]" for word in words]
-        df_dict = {"word": words, "video_path": video_paths}
+
+    anki_import_dependencies = [words is not None, video_paths is not None]
+    if all(anki_import_dependencies):
+        tags = st_tags(
+            label="Anki tags for flashcards",
+            text="Press enter after each tag",
+            suggestions=["asl-lesson1"],
+            maxtags=-1,
+        )
+
+        done_with_tags = st.button("Finish adding tags and generate flashcard deck")
+        if not done_with_tags:
+            return
+
+        card_tags = [tags for _ in range(len(words))]
+        df_dict = {"word": words, "video_path": video_paths, "tags": card_tags}
         anki_import_df = pd.DataFrame.from_dict(df_dict)
         anki_import_csv = bytes(
             anki_import_df.to_csv(line_terminator="\n", header=False, index=False),

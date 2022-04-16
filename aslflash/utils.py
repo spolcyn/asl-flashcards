@@ -231,8 +231,10 @@ def zip_dir(source_dir: str) -> str:
 
 def build_apkg_from_df(anki_import_df: pd.DataFrame, split_video_dir: str):
     notes = [
-        genanki.Note(model=asl_model, fields=[video, word, ""])
-        for (video, word) in zip(anki_import_df["word"], anki_import_df["video_path"])
+        genanki.Note(model=asl_model, fields=[video, word, ""], tags=tags)
+        for (video, word, tags) in zip(
+            anki_import_df["word"], anki_import_df["video_path"], anki_import_df["tags"]
+        )
     ]
 
     deck = get_asl_anki_deck()
