@@ -102,8 +102,6 @@ def render_app():
     video_paths = None
     zip_videos_dependencies = [finished_computation, split_video_dir]
     if all(zip_videos_dependencies):
-        # BOTH METHODS:
-        # Create a zip file of the videos
         zip_output_path = zip_dir(split_video_dir)  # type: ignore
 
         # Create a CSV file to import to Anki
@@ -137,43 +135,27 @@ def render_app():
         with NamedTemporaryFile(delete=False, suffix=".apkg") as deck_file:
             deck_apkg.write_to_file(deck_file)
 
-        # LOCAL METHOD:
-        # Read file into memory and make a download link for it
-        LOCAL_MODE = True
-        if LOCAL_MODE:
-            st.subheader("Recommended Download Mode")
-            with open(deck_file.name, "rb") as deck_apkg:
-                st.download_button(
-                    label="Download Anki Package to import to Anki",
-                    data=deck_apkg,
-                    file_name="asl_anki.apkg",
-                    mime="application/octet-stream",
-                )
+        st.subheader("Recommended Download Mode")
+        with open(deck_file.name, "rb") as deck_apkg:
+            st.download_button(
+                label="Download Anki Package to import to Anki",
+                data=deck_apkg,
+                file_name="asl_anki.apkg",
+                mime="application/octet-stream",
+            )
 
-            st.subheader("Expert/Manual Download Mode")
-            with open(zip_output_path, "rb") as f:
-                st.download_button(
-                    label="Download ZIP of split videos",
-                    data=f,
-                    file_name="split_videos.zip",
-                    mime="application/octet-stream",
-                )
+        st.subheader("Expert/Manual Download Mode")
+        with open(zip_output_path, "rb") as f:
+            st.download_button(
+                label="Download ZIP of split videos",
+                data=f,
+                file_name="split_videos.zip",
+                mime="application/octet-stream",
+            )
 
-                st.download_button(
-                    label="Download CSV to import to Anki",
-                    data=anki_import_csv,
-                    file_name="anki_import.csv",
-                    mime="application/text",
-                )
-
-        else:
-            # CLOUD METHOD:
-            # Upload the zip file to S3 on a time-limited basis (say, 5-10min)
-            # Get the link from where it was uploaded on S3
-            # Use the URL link with the download part of the link to enable user to
-            # download the file
-            url = "test.com"
-            href = f'<a href="{url}" download="split_videos.zip">Click to download split videos</a>'
-            st.markdown(
-                f"Download a zip of your files at {href}", unsafe_allow_html=True
+            st.download_button(
+                label="Download CSV to import to Anki",
+                data=anki_import_csv,
+                file_name="anki_import.csv",
+                mime="application/text",
             )
