@@ -12,7 +12,7 @@ from streamlit_tags import st_tags
 from aslflash.utils import (
     build_apkg_from_df,
     get_vocab_timing_df,
-    validate_word_timing_df,
+    validate_word_timing_data,
     split_video,
     zip_dir,
     make_segment_string,
@@ -64,7 +64,7 @@ def render_app() -> None:
         vocab_timing_data: BytesIO = BytesIO(vocab_timing_csv.getvalue())
         try:
             vocab_timing_df = get_vocab_timing_df(vocab_timing_data)
-            validate_word_timing_df(vocab_timing_df)
+            validate_word_timing_data(vocab_timing_df)
         except ValueError as e:
             logger.exception(e)
             st.error(str(e))
@@ -88,7 +88,7 @@ def render_app() -> None:
             # (i.e., largest time stamp < length of video)
             split_video_dir = split_video(video_data, segment_string)  # type: ignore
             vocab_timing_df["word"] = vocab_timing_df["word"].apply(sanitize_filename)
-            rename_videos(split_video_dir, vocab_timing_df)
+            rename_videos(split_video_dir, vocab_timing_df["word"])
             finished_computation = True
             st.write("Done splitting video")
 

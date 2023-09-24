@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 import subprocess
 from tempfile import NamedTemporaryFile, mkdtemp
+from typing import Iterable
 
 import pandas as pd
 import streamlit as st
@@ -12,7 +13,7 @@ import genanki
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-card_style = """
+card_style: str = """
 .card {
   font-family: arial;
   font-size: 20px;
@@ -47,25 +48,27 @@ asl_model = genanki.Model(
     css=card_style,
 )
 
+
 # TODO(spolcyn): Make a more robust way to generate the deck_id, given that it
 # may overlap with existing user decks
 def get_asl_anki_deck() -> genanki.Deck:
     return genanki.Deck(deck_id=1374105886, name="ASL Anki")
 
 
-def get_vocab_timing_df(csv_source) -> pd.DataFrame:
-    dtype_dict = {
+def get_vocab_timing_df(csv_source: str) -> pd.DataFrame:
+    """Get the vocab/timing data with the correct types"""
+    column_to_type: dict[str, str] = {
         "word": "string",
         "start_time": "float64",
     }
 
     try:
-        return pd.read_csv(csv_source, dtype=dtype_dict)
+        return pd.read_csv(csv_source, dtype=column_to_type)
     except ValueError as exc:
         raise ValueError(
             "Column values were the wrong types. "
-            "Review the docs to ensure your CSV coforms to the format specification."
-        )
+            "Review the docs to ensure your CSV conforms to the format specification."
+        ) from exc
 
 
 def make_segment_string(vocab_timing_df: pd.DataFrame) -> str:
@@ -84,26 +87,31 @@ def make_segment_string(vocab_timing_df: pd.DataFrame) -> str:
 
 
 @st.cache
-def rename_videos(split_video_dir: str, word_timing_df: pd.DataFrame) -> None:
-    # Get absolute file paths of the videos in the dir
-    # Parse filename to get the index -- just split on the '.' for the extension
-    # Use the index to access the correct row in the DF
-    # Rename the file to be `word.ext`
+def rename_videos(split_video_dir: str, words: Iterable[str]) -> None:
+    """
+    Renames the split clips according to the vocabulary words they correspond to
+
+    Args:
+        split_video_dir: Directory containing the clips, expected to be named
+            "<n>.ext" for n in [0, # vocab words]. Clip 0 is discarded.
+        words: Iterable that contains the words in the order they appear in the
+            video.
+
+    """
     logger.info(f"Renaming videos in directory {split_video_dir}")
-    filenames = os.listdir(split_video_dir)
+    filenames = sorted(os.listdir(split_video_dir))
     logger.info(f"Filenames {filenames}")
 
+    words = iter(words)
     for filename in filenames:
         segment_number, extension = filename.split(".")
-        segment_number = int(segment_number)
         logger.info("Renaming video %s", segment_number)
 
-        if segment_number == 0:
+        if segment_number == "0":
             os.remove(os.path.join(split_video_dir, filename))
             continue
 
-        index = segment_number - 1
-        word = word_timing_df["word"].iloc[index]
+        word: str = next(words)
         os.rename(
             os.path.join(split_video_dir, filename),
             os.path.join(split_video_dir, f"{word}.{extension}"),
@@ -168,37 +176,30 @@ def split_video(video_data: bytes, segment_string: str) -> str:
     return split_video_dir
 
 
-def validate_word_timing_df(csv_df: pd.DataFrame) -> bool:
-    required_columns = ["word", "start_time"]
-    if not all([column in csv_df.columns for column in required_columns]):
+def validate_word_timing_data(word_timing_data: pd.DataFrame) -> bool:
+    """Validates a vocab and timing data input. Raises `ValueError` if any
+    issues are found in the input"""
+    required_columns: list[str] = ["word", "start_time"]
+    if not all([column in word_timing_data.columns for column in required_columns]):
         raise ValueError(
-            f"Expected {required_columns} as columns (got {list(csv_df.columns)})"
+            f"Expected {required_columns} as columns (got {list(word_timing_data.columns)})"
         )
 
-    column_to_dtype = {
+    column_to_dtype: dict[str, str] = {
         "word": "string",
         "start_time": "float64",
     }
     for column, dtype in column_to_dtype.items():
-        if not csv_df.dtypes[column] == dtype:
+        if not word_timing_data.dtypes[column] == dtype:
             raise ValueError(
-                f"Expected column {column} to be dtype {dtype} (got {csv_df.dtypes[column]})"
+                f"Expected column {column} to be dtype {dtype} (got {word_timing_data.dtypes[column]})"
             )
 
-    deduplicated_words = set(csv_df["word"])
-    if len(deduplicated_words) != len(csv_df["word"]):
-        duplicated_words = []
-        temp_set = set()
-        for word in csv_df["word"]:
-            len_before = len(temp_set)
-            temp_set.add(word)
-            if len(temp_set) == len_before:
-                duplicated_words.append(word)
-
-        duplicated_words_str = ", ".join(duplicated_words)
-
+    duplicate_mask: pd.Series = word_timing_data.duplicated(subset=["word"])
+    if any(duplicate_mask):
+        duplicated_words: str = ", ".join(word_timing_data["word"][duplicate_mask])
         raise ValueError(
-            f"Got {duplicated_words_str} multiple times, all words must be unique"
+            f"Got {duplicated_words} multiple times, all words must be unique"
         )
 
     return True
@@ -214,10 +215,10 @@ def zip_dir(source_dir: str) -> str:
     Returns:
         str: Path to the created zip file
     """
-    zip_output_dir = mkdtemp()
+    zip_output_dir: str = mkdtemp()
     logger.debug(f"Zipping directory {source_dir}")
 
-    zip_output_path = shutil.make_archive(
+    zip_output_path: str = shutil.make_archive(
         os.path.join(zip_output_dir, "split_videos"), "zip", source_dir
     )
     logger.info("Created ZIP output at: %s", zip_output_path)
@@ -225,22 +226,35 @@ def zip_dir(source_dir: str) -> str:
     return zip_output_path
 
 
-def build_apkg_from_df(anki_import_df: pd.DataFrame, split_video_dir: str):
-    notes = [
+def build_apkg_from_df(
+    anki_import_df: pd.DataFrame, split_video_dir: str
+) -> genanki.Package:
+    """
+    Builds an Anki `.apkg` file from pipeline output
+
+    Args:
+        anki_import_df: CSV that would be suitable for importing to Anki,
+            including paths to the videos attached to each flashcard
+        split_video_dir: Path to directory holding media that would be imported
+            alongside the CSV
+    """
+    notes: list[genanki.Note] = [
         genanki.Note(model=asl_model, fields=[video, word, ""], tags=tags)
         for (video, word, tags) in zip(
             anki_import_df["word"], anki_import_df["video_path"], anki_import_df["tags"]
         )
     ]
 
-    deck = get_asl_anki_deck()
+    deck: genanki.Deck = get_asl_anki_deck()
     for note in notes:
         deck.add_note(note)
 
-    video_files = [f for f in Path(split_video_dir).iterdir() if f.is_file()]
+    video_files: list[Path] = [
+        f for f in Path(split_video_dir).iterdir() if f.is_file()
+    ]
     logger.debug(f"Adding video files to apkg: {video_files}")
 
-    package = genanki.Package(deck)
+    package: genanki.Package = genanki.Package(deck)
     package.media_files = video_files
 
     return package
