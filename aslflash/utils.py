@@ -165,10 +165,6 @@ def split_video(video_data: bytes, segment_string: str) -> str:
         command_out = subprocess.run(command, capture_output=True, shell=True)
         logger.info("Command out:\n%s", command_out)
 
-        # Remove the initial segment before the first word
-        # os.remove(os.path.join(split_video_dir, "0.mov"))
-        logger.info("Not removing")
-
     return split_video_dir
 
 
