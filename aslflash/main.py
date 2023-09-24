@@ -7,7 +7,6 @@ import pandas as pd
 import streamlit as st
 from pathvalidate import sanitize_filename
 from streamlit_tags import st_tags
-import yaml
 
 from aslflash.utils import (
     build_apkg_from_df,
@@ -24,39 +23,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def render():
-    if "logged_in" not in st.session_state:
-        with open("logins.yml") as f:
-            logins = yaml.safe_load(f)
-        print(f"logins {logins}")
-
-        username_in = st.empty()
-        password_in = st.empty()
-        username = username_in.text_input(label="Username")
-        password = password_in.text_input(label="Password", type="password")
-
-        try_login_in = st.empty()
-        try_login = try_login_in.button(label="Login")
-        if not try_login:
-            return
-
-        internal_username = username.lower()
-        expected_password = logins["logins"].get(internal_username, None)
-        if expected_password is None or expected_password != password:
-            st.error("Login failed")
-            logger.debug(
-                f"Username {internal_username} not found (original: {username}"
-            )
-            return
-
-        st.success(f"Login succeeded. Welcome, {username}.")
-        st.session_state["logged_in"] = True
-        st.session_state["username"] = internal_username
-
-        # https://discuss.streamlit.io/t/delete-widgets/7596/6
-        username_in.empty()
-        password_in.empty()
-        try_login_in.empty()
-
     # References:
     # https://superuser.com/questions/692714/how-to-split-videos-with-ffmpeg-and-segment-times-option
     # Time unit syntax: https://trac.ffmpeg.org/wiki/Seeking#Timeunitsyntax
