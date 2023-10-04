@@ -2,5 +2,6 @@ version: '3'
 services:
   app:
     build: .
+    image: spolcyn/asl-flash
     ports:
       - "9000:9000"

@@ -127,7 +127,7 @@ def render_app() -> None:
         df_dict: dict[str, list[str]] = {"word": words, "video_path": video_paths, "tags": card_tags}
         anki_import_df: pd.DataFrame = pd.DataFrame.from_dict(df_dict)
         anki_import_csv: bytes = bytes(
-            anki_import_df.to_csv(line_terminator="\n", header=False, index=False),
+            anki_import_df.to_csv(lineterminator="\n", header=False, index=False),
             encoding="utf-8",
         )
 

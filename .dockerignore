@@ -1,0 +1,6 @@
+README.md
+deploy/**
+tests/**
+tags
+gitexporter.config.json
+Makefile

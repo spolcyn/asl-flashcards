@@ -1,0 +1,8 @@
+ffmpeg
+genanki
+pandas
+pathvalidate
+pytest
+setuptools
+streamlit
+streamlit-tags
