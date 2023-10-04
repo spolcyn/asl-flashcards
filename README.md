@@ -12,4 +12,4 @@
 ### Python
 1. Install dependencies: `pip install -r requirements.txt`
 2. Add module to Python path: `python setup.py develop`
-3. Start streamlit: `streamlit run aslflash/app.py`
+3. Start streamlit: `python -m streamlit run aslflash/app.py`
